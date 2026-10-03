@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.lapaksoed.MarketplaceApiIntegrationTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-03T17:30:08.805Z" hostname="archlinux" time="9.026">
+  <properties/>
+  <testcase name="user can register authenticate and publish a listing()" classname="com.example.lapaksoed.MarketplaceApiIntegrationTest" time="1.603"/>
+  <system-out><![CDATA[00:30:08.919 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.example.lapaksoed.MarketplaceApiIntegrationTest]: MarketplaceApiIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+00:30:09.042 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.example.lapaksoed.LapakSoedApiApplication for test class com.example.lapaksoed.MarketplaceApiIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.6)
+
+2026-10-04T00:30:09.465+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] c.e.l.MarketplaceApiIntegrationTest      : Starting MarketplaceApiIntegrationTest using Java 17.0.20.1 with PID 17462 (started by topabasco in /home/topabasco/AndroidStudioProjects/LapakSoed/backend)
+2026-10-04T00:30:09.467+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] c.e.l.MarketplaceApiIntegrationTest      : The following 1 profile is active: "test"
+2026-10-04T00:30:10.830+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-04T00:30:10.888+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 49 ms. Found 5 JPA repository interfaces.
+2026-10-04T00:30:11.334+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-04T00:30:11.379+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-10-04T00:30:11.408+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-04T00:30:11.648+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-04T00:30:11.674+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-04T00:30:11.823+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:lapaksoed-test user=SA
+2026-10-04T00:30:11.824+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-04T00:30:11.877+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-04T00:30:12.674+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-04T00:30:12.736+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-04T00:30:13.474+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-04T00:30:15.176+07:00  WARN 17462 --- [lapaksoed-backend] [    Test worker] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 740405c5-21de-4de1-9022-78e3c1dd9d18
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-10-04T00:30:15.183+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-10-04T00:30:15.555+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-04T00:30:16.100+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-04T00:30:16.101+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-04T00:30:16.102+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-04T00:30:16.170+07:00  INFO 17462 --- [lapaksoed-backend] [    Test worker] c.e.l.MarketplaceApiIntegrationTest      : Started MarketplaceApiIntegrationTest in 7.009 seconds (process running for 8.063)
+2026-10-04T00:30:17.541+07:00  WARN 17462 --- [lapaksoed-backend] [    Test worker] ration$PageModule$WarningLoggingModifier : Serializing PageImpl instances as-is is not supported, meaning that there is no guarantee about the stability of the resulting JSON structure!
+	For a stable JSON structure, please use Spring Data's PagedModel (globally via @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO))
+	or Spring HATEOAS and Spring Data's PagedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
+
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
