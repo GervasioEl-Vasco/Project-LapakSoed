@@ -28,7 +28,6 @@ fun SelectProductScreen(
     onBack: () -> Unit
 ) {
     val product by viewModel.selectedListing.collectAsState()
-    val quantity by viewModel.quantity.collectAsState()
 
     val blueBg = Color(0xFF0924A5)
     val yellowBtn = Color(0xFFFFD600)
@@ -116,32 +115,7 @@ fun SelectProductScreen(
                         )
                     }
 
-                    // Quantity selector
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .border(1.dp, textBlue, RoundedCornerShape(16.dp))
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = "-",
-                            modifier = Modifier.clickable { viewModel.updateQuantity(quantity - 1) }.padding(horizontal = 8.dp, vertical = 4.dp),
-                            color = textBlue,
-                            fontSize = 20.sp
-                        )
-                        Text(
-                            text = quantity.toString(),
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            color = Color.Black,
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = "+",
-                            modifier = Modifier.clickable { viewModel.updateQuantity(quantity + 1) }.padding(horizontal = 8.dp, vertical = 4.dp),
-                            color = textBlue,
-                            fontSize = 18.sp
-                        )
-                    }
+                    Text("Jumlah: 1", color = textBlue, fontWeight = FontWeight.Bold)
                 }
             }
 

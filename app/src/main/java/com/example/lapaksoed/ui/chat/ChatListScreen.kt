@@ -34,6 +34,7 @@ fun ChatListScreen(
     viewModel: ChatViewModel,
     onNavigateToDetail: () -> Unit,
     onNavigateToHome: () -> Unit = {},
+    onNavigateToOrders: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {}
 ) {
     val listState by viewModel.listState.collectAsState()
@@ -53,6 +54,7 @@ fun ChatListScreen(
                 onNavigate = { route -> 
                     when (route) {
                         "home" -> onNavigateToHome()
+                        "orders" -> onNavigateToOrders()
                         "profile" -> onNavigateToProfile()
                     }
                 }

@@ -6,8 +6,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
-    // 10.0.2.2 is the special IP alias to your host loopback interface for Android Emulator
-    private const val BASE_URL = "http://10.0.2.2:8080/api/v1/"
+    // For a physical USB-connected phone, run: adb reverse tcp:8080 tcp:8080
+    private const val BASE_URL = "http://127.0.0.1:8080/api/v1/"
     
     var authToken: String? = null
     var currentUserId: String? = null
@@ -38,4 +38,7 @@ object ApiClient {
     val authApi: AuthApi = retrofit.create(AuthApi::class.java)
     val listingApi: ListingApi = retrofit.create(ListingApi::class.java)
     val chatApi: ChatApi = retrofit.create(ChatApi::class.java)
+    val orderApi: OrderApi = retrofit.create(OrderApi::class.java)
+    val promotionApi: PromotionApi = retrofit.create(PromotionApi::class.java)
+    val partnerApi: PartnerApi = retrofit.create(PartnerApi::class.java)
 }

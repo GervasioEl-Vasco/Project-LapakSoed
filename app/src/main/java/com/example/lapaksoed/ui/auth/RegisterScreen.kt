@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -42,6 +43,17 @@ fun RegisterScreen(
 
     val blueBg = Color(0xFF0924A5)
     val yellowBtn = Color(0xFFFFD600)
+    val inputColors = TextFieldDefaults.colors(
+        focusedTextColor = Color(0xFF111827),
+        unfocusedTextColor = Color(0xFF111827),
+        focusedPlaceholderColor = Color(0xFF6B7280),
+        unfocusedPlaceholderColor = Color(0xFF6B7280),
+        cursorColor = blueBg,
+        focusedContainerColor = Color.White,
+        unfocusedContainerColor = Color.White,
+        focusedIndicatorColor = Color.Transparent,
+        unfocusedIndicatorColor = Color.Transparent
+    )
     
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
@@ -68,11 +80,15 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo Placeholder
-            Box(
+            // Logo
+            Image(
+                painter = painterResource(R.drawable.lapaksoed_logo),
+                contentDescription = "Logo LapakSoed",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(100.dp)
-                    .background(Color.White, CircleShape)
+                    .size(110.dp)
+                    .clip(CircleShape)
+                    .background(yellowBtn, CircleShape)
             )
             
             Spacer(modifier = Modifier.height(32.dp))
@@ -92,12 +108,7 @@ fun RegisterScreen(
                     placeholder = { Text("username", color = Color.Gray, fontFamily = FontFamily.Monospace) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                    colors = inputColors,
                     singleLine = true
                 )
             }
@@ -119,12 +130,7 @@ fun RegisterScreen(
                     placeholder = { Text("H1A021000", color = Color.Gray, fontFamily = FontFamily.Monospace) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                    colors = inputColors,
                     singleLine = true
                 )
             }
@@ -146,12 +152,7 @@ fun RegisterScreen(
                     placeholder = { Text("email@mhs.unsoed.ac.id", color = Color.Gray, fontFamily = FontFamily.Monospace) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                    colors = inputColors,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )
@@ -175,12 +176,7 @@ fun RegisterScreen(
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                    colors = inputColors,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                 )
@@ -204,12 +200,7 @@ fun RegisterScreen(
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                    colors = inputColors,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                 )

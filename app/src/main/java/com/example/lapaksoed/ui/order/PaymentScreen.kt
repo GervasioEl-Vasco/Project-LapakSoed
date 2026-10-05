@@ -136,7 +136,7 @@ fun PaymentScreen(
                     onValueChange = { viewModel.setComplaint(it) },
                     modifier = Modifier.fillMaxWidth().height(120.dp).background(Color.White, RoundedCornerShape(12.dp)),
                     placeholder = { Text("Cth: LCD Rusak, Mati Total") },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Transparent,
                         unfocusedBorderColor = Color.Transparent
                     )

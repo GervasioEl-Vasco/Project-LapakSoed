@@ -30,8 +30,8 @@ class ListingService(
         }
         val results = listingRepository.search(
             status = ListingStatus.AVAILABLE,
-            category = category?.trim()?.takeIf(String::isNotEmpty),
-            search = query?.trim()?.takeIf(String::isNotEmpty),
+            category = category?.trim().orEmpty(),
+            search = query?.trim().orEmpty(),
             minPrice = minPrice,
             maxPrice = maxPrice,
             sellerId = null,
@@ -78,8 +78,8 @@ class ListingService(
     @Transactional(readOnly = true)
     fun mine(user: User, page: Int, size: Int): Page<ListingResponse> = listingRepository.search(
         status = null,
-        category = null,
-        search = null,
+        category = "",
+        search = "",
         minPrice = null,
         maxPrice = null,
         sellerId = requireNotNull(user.id),

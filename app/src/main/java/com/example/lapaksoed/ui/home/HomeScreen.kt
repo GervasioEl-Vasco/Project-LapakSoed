@@ -28,6 +28,10 @@ import androidx.compose.material.icons.outlined.Checkroom
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.Checkroom
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,12 +52,17 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lapaksoed.R
 import com.example.lapaksoed.data.remote.ListingResponse
+import com.example.lapaksoed.data.remote.PromotionResponse
+import androidx.compose.ui.platform.LocalUriHandler
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToOrders: () -> Unit = {},
+    onOpenPromotion: (PromotionResponse) -> Unit = {},
     onProductClick: (ListingResponse) -> Unit = {},
     onNavigateToChat: () -> Unit = {}
 ) {
@@ -62,10 +71,11 @@ fun HomeScreen(
     val recommendations by viewModel.recommendations.collectAsState()
     val isSearchActive by viewModel.isSearchActive.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val promotions by viewModel.promotions.collectAsState()
+    val uriHandler = LocalUriHandler.current
 
     val blueBg = Color(0xFF0924A5)
     val yellowBtn = Color(0xFFFFD600)
-    val cardBg = Color.White
     val textBlue = Color(0xFF0924A5)
 
     Scaffold(
@@ -78,6 +88,7 @@ fun HomeScreen(
                     when (route) {
                         "chat" -> onNavigateToChat()
                         "profile" -> onNavigateToProfile()
+                        "orders" -> onNavigateToOrders()
                     }
                 }
             )
@@ -105,7 +116,7 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .height(90.dp)
                         .background(
-                            Color.White,
+                            MaterialTheme.colorScheme.surface,
                             shape = RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp)
                         )
                         .border(
@@ -123,18 +134,35 @@ fun HomeScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(60.dp)
+                                .size(64.dp)
                                 .background(yellowBtn, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("LS", color = blueBg, fontWeight = FontWeight.Bold)
+                            Image(
+                                painter = painterResource(R.drawable.lapaksoed_logo),
+                                contentDescription = "Logo LapakSoed",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clip(CircleShape)
+                            )
                         }
                         
                         Spacer(modifier = Modifier.width(16.dp))
                         
                         // Iklan Berjalan (Banner Carousel) di bagian paling atas
                         Box(modifier = Modifier.weight(1f)) {
-                            BannerCarousel()
+                            BannerCarousel(
+                                promotions = promotions,
+                                onPromotionClick = { promotion ->
+                                    if (promotion.targetUrl.startsWith("https://", ignoreCase = true)) {
+                                        runCatching { uriHandler.openUri(promotion.targetUrl) }
+                                            .onFailure { onOpenPromotion(promotion) }
+                                    } else {
+                                        onOpenPromotion(promotion)
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -157,7 +185,7 @@ fun HomeScreen(
                                     .fillMaxWidth()
                                     .padding(top = 4.dp),
                                 shape = RoundedCornerShape(12.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                             ) {
                                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
@@ -180,7 +208,7 @@ fun HomeScreen(
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Text(
                                                 text = recommendation,
-                                                color = Color.Black,
+                                                color = MaterialTheme.colorScheme.onSurface,
                                                 fontSize = 16.sp
                                             )
                                         }
@@ -206,7 +234,7 @@ fun HomeScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                         ) {
                             Column(
@@ -215,21 +243,27 @@ fun HomeScreen(
                                     .padding(16.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Row(
+                                LazyRow(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    contentPadding = PaddingValues(horizontal = 4.dp)
                                 ) {
-                                    CategoryItem("Makanan", Icons.Outlined.Restaurant, selectedCategory) { viewModel.filterByCategory(it) }
-                                    CategoryItem("Minuman", Icons.Outlined.LocalDrink, selectedCategory) { viewModel.filterByCategory(it) }
-                                    CategoryItem("Pakaian", Icons.Outlined.Checkroom, selectedCategory) { viewModel.filterByCategory(it) }
-                                }
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceEvenly
-                                ) {
-                                    CategoryItem("Barang", Icons.Outlined.Inventory2, selectedCategory) { viewModel.filterByCategory(it) }
-                                    CategoryItem("Jasa Service", Icons.Outlined.Build, selectedCategory) { viewModel.filterByCategory(it) }
+                                    val catalogCategories = listOf(
+                                        "Semua" to Icons.Default.Category,
+                                        "Makanan" to Icons.Outlined.Restaurant,
+                                        "Minuman" to Icons.Outlined.LocalDrink,
+                                        "Pakaian" to Icons.Outlined.Checkroom,
+                                        "Barang" to Icons.Outlined.Inventory2,
+                                        "Jasa Service" to Icons.Outlined.Build,
+                                        "Buku" to Icons.Default.Book,
+                                        "Elektronik" to Icons.Default.Devices,
+                                        "Aksesoris" to Icons.Default.Star,
+                                        "Perlengkapan" to Icons.Outlined.Inventory2,
+                                        "Lainnya" to Icons.Default.Category
+                                    )
+                                    lazyRowItems(catalogCategories) { (title, icon) ->
+                                        CategoryItem(title, icon, selectedCategory) { viewModel.filterByCategory(it) }
+                                    }
                                 }
                             }
                         }
@@ -303,7 +337,7 @@ fun SearchBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(50.dp)
-            .background(Color.White, RoundedCornerShape(25.dp))
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(25.dp))
             .border(2.dp, Color(0xFFD3D3D3), RoundedCornerShape(25.dp))
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.CenterStart
@@ -312,7 +346,7 @@ fun SearchBar(
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = "Search",
-                tint = Color.Black
+                tint = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.width(8.dp))
             BasicTextField(
@@ -323,7 +357,7 @@ fun SearchBar(
                     .onFocusChanged { focusState ->
                         onFocusChange(focusState.isFocused)
                     },
-                textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { onSearch(query) }),
@@ -341,6 +375,7 @@ fun SearchBar(
                     tint = Color.Gray,
                     modifier = Modifier.clickable {
                         onQueryChange("")
+                        onSearch("")
                     }
                 )
             }
@@ -356,12 +391,12 @@ fun CategoryItem(
     onClick: (String) -> Unit
 ) {
     val textBlue = Color(0xFF0924A5)
-    val isSelected = selectedCategory == title
+    val isSelected = selectedCategory == title || (title == "Semua" && selectedCategory == null)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .background(Color.White, RoundedCornerShape(12.dp))
-            .border(if (isSelected) 3.dp else 1.dp, if (isSelected) Color(0xFFFFD600) else Color.Black, RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
+            .border(if (isSelected) 3.dp else 1.dp, if (isSelected) Color(0xFFFFD600) else MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
             .clickable { onClick(title) }
             .padding(8.dp)
             .width(80.dp)
@@ -369,13 +404,13 @@ fun CategoryItem(
         Icon(
             imageVector = icon,
             contentDescription = title,
-            tint = textBlue,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(32.dp)
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = title,
-            color = textBlue,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
@@ -385,25 +420,46 @@ fun CategoryItem(
 }
 
 @Composable
-fun BannerCarousel() {
-    val banners = listOf("IKLAN", "PROMO SPESIAL", "GRATIS ONGKIR")
+fun BannerCarousel(
+    promotions: List<PromotionResponse>,
+    onPromotionClick: (PromotionResponse) -> Unit
+) {
+    val banners = promotions
     
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
+        if (banners.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(60.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("PROMO LAPAKSOED", color = Color(0xFF0924A5), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
         lazyRowItems(banners) { banner ->
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .width(250.dp)
                     .height(60.dp)
-                    .clickable { /* TODO: API integration later */ },
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { onPromotionClick(banner) },
                 contentAlignment = Alignment.Center
             ) {
+                AsyncImage(
+                    model = banner.imageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.42f)))
                 Text(
-                    text = banner,
-                    color = Color(0xFFFFD600), // Yellow/Orange color matching Figma "IKLAN"
-                    fontSize = 36.sp,
+                    text = banner.title,
+                    color = Color.White,
+                    fontSize = 18.sp,
                     fontFamily = FontFamily.Cursive,
                     fontWeight = FontWeight.Bold
                 )
@@ -421,7 +477,7 @@ fun ProductCard(
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier = Modifier.fillMaxWidth().clickable { onClick(product) }
     ) {
@@ -455,7 +511,7 @@ fun ProductCard(
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = product.title,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     maxLines = 1,
@@ -478,7 +534,7 @@ fun ProductCard(
                             Spacer(modifier = Modifier.width(2.dp))
                             Text(
                                 text = "5.0", // Dummy rating as backend doesn't have it
-                                color = Color.Black,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -507,9 +563,9 @@ fun BottomNavigationBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surface)
             .padding(vertical = 8.dp, horizontal = 16.dp)
-            .border(2.dp, Color.Black, RoundedCornerShape(32.dp))
+            .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(32.dp))
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
@@ -561,7 +617,7 @@ fun BottomNavItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Color.Black,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(28.dp)
         )
     }

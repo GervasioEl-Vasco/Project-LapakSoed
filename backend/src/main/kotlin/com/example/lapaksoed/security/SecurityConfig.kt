@@ -31,7 +31,10 @@ class SecurityConfig(
         .authorizeHttpRequests {
             it.requestMatchers("/api/v1/auth/me").authenticated()
                 .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/actuator/health").permitAll()
+                .requestMatchers("/api/v1/admin/promotions/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/promotions").permitAll()
                 .requestMatchers("/api/v1/listings/mine").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/listings").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/listings/**").permitAll()
                 .anyRequest().authenticated()
         }

@@ -45,6 +45,7 @@ fun ChatDetailScreen(
     val activeConv by viewModel.activeConversation.collectAsState()
     
     var inputText by remember { mutableStateOf("") }
+    var showAttachmentInfo by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
     val yellowBtn = Color(0xFFFFD600)
@@ -136,7 +137,7 @@ fun ChatDetailScreen(
                         modifier = Modifier
                             .size(40.dp)
                             .background(Color(0xFFF0F0F0), RoundedCornerShape(12.dp))
-                            .clickable { /* noop */ },
+                            .clickable { showAttachmentInfo = true },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = "Add", tint = Color.Gray)
@@ -187,7 +188,7 @@ fun ChatDetailScreen(
                 }
             }
         }
-    } { innerPadding ->
+    ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             Image(
                 painter = painterResource(id = R.drawable.bg_home),
@@ -225,6 +226,16 @@ fun ChatDetailScreen(
                 else -> {}
             }
         }
+    }
+    if (showAttachmentInfo) {
+        AlertDialog(
+            onDismissRequest = { showAttachmentInfo = false },
+            title = { Text("Lampiran") },
+            text = { Text("Pengiriman foto atau file belum didukung oleh layanan chat.") },
+            confirmButton = {
+                TextButton(onClick = { showAttachmentInfo = false }) { Text("Tutup") }
+            }
+        )
     }
 }
 

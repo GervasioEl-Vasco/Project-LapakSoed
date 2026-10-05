@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -32,10 +33,22 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var showForgotPasswordInfo by remember { mutableStateOf(false) }
     val authState by viewModel.authState.collectAsState()
 
     val blueBg = Color(0xFF0924A5)
     val yellowBtn = Color(0xFFFFD600)
+    val inputColors = TextFieldDefaults.colors(
+        focusedTextColor = Color(0xFF111827),
+        unfocusedTextColor = Color(0xFF111827),
+        focusedPlaceholderColor = Color(0xFF6B7280),
+        unfocusedPlaceholderColor = Color(0xFF6B7280),
+        cursorColor = blueBg,
+        focusedContainerColor = Color.White,
+        unfocusedContainerColor = Color.White,
+        focusedIndicatorColor = Color.Transparent,
+        unfocusedIndicatorColor = Color.Transparent
+    )
     
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
@@ -61,11 +74,15 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo Placeholder
-            Box(
+            // Logo
+            Image(
+                painter = painterResource(R.drawable.lapaksoed_logo),
+                contentDescription = "Logo LapakSoed",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(100.dp)
-                    .background(Color.White, CircleShape)
+                    .size(110.dp)
+                    .clip(CircleShape)
+                    .background(yellowBtn, CircleShape)
             )
             
             Spacer(modifier = Modifier.height(48.dp))
@@ -82,15 +99,10 @@ fun LoginScreen(
                 TextField(
                     value = email,
                     onValueChange = { email = it },
-                    placeholder = { Text("email@mhs.unsoed.ac.id", color = Color.Gray, fontFamily = FontFamily.Monospace) },
+                    placeholder = { Text("email@mhs.unsoed.ac.id", color = Color(0xFF6B7280), fontFamily = FontFamily.Monospace) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                    colors = inputColors,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )
@@ -110,16 +122,11 @@ fun LoginScreen(
                 TextField(
                     value = password,
                     onValueChange = { password = it },
-                    placeholder = { Text("••••••", color = Color.Gray, fontFamily = FontFamily.Monospace) },
+                    placeholder = { Text("••••••", color = Color(0xFF6B7280), fontFamily = FontFamily.Monospace) },
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                    colors = inputColors,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                 )
@@ -135,7 +142,7 @@ fun LoginScreen(
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier
                     .align(Alignment.Start)
-                    .clickable { /* TODO */ }
+                    .clickable { showForgotPasswordInfo = true }
             )
             
             Spacer(modifier = Modifier.height(32.dp))
@@ -184,5 +191,15 @@ fun LoginScreen(
                 )
             }
         }
+    }
+    if (showForgotPasswordInfo) {
+        AlertDialog(
+            onDismissRequest = { showForgotPasswordInfo = false },
+            title = { Text("Lupa Password") },
+            text = { Text("Fitur reset password belum tersedia. Silakan hubungi pengelola LapakSoed untuk bantuan akun.") },
+            confirmButton = {
+                TextButton(onClick = { showForgotPasswordInfo = false }) { Text("Tutup") }
+            }
+        )
     }
 }

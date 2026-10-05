@@ -11,6 +11,8 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -21,6 +23,79 @@ class MarketplaceApiIntegrationTest @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
 ) {
+    @Test
+    fun `student can submit and view a single partner application`() {
+        val registration = mockMvc.perform(
+            post("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"email":"partner-${System.nanoTime()}@mhs.unsoed.ac.id","password":"rahasia123","fullName":"Calon Mitra","nim":"${System.nanoTime()}"}"""),
+        ).andExpect(status().isOk).andReturn()
+        val token = objectMapper.readTree(registration.response.contentAsString).get("accessToken").asText()
+        val requestBody = """{"businessName":"Lapak Buku Kampus","contactPhone":"081234567890","description":"Menjual buku dan perlengkapan kuliah."}"""
+
+        mockMvc.perform(
+            post("/api/v1/partners/applications")
+                .header("Authorization", "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody),
+        ).andExpect(status().isCreated)
+            .andExpect(jsonPath("$.businessName").value("Lapak Buku Kampus"))
+            .andExpect(jsonPath("$.status").value("PENDING"))
+
+        mockMvc.perform(get("/api/v1/partners/applications/mine").header("Authorization", "Bearer $token"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.contactPhone").value("081234567890"))
+
+        mockMvc.perform(
+            post("/api/v1/partners/applications")
+                .header("Authorization", "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody),
+        ).andExpect(status().isConflict)
+    }
+
+    @Test
+    fun `public can read active promotions and only admin key can manage them`() {
+        val requestBody = """{"title":"Promo kampus","imageUrl":"https://cdn.example.org/promo.png","targetUrl":"/promotions/kampus","active":true,"displayOrder":10,"startsAt":"2025-01-01T00:00:00Z","endsAt":"2099-01-01T00:00:00Z"}"""
+
+        mockMvc.perform(
+            post("/api/v1/admin/promotions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody),
+        ).andExpect(status().isUnauthorized)
+
+        val created = mockMvc.perform(
+            post("/api/v1/admin/promotions")
+                .header("X-Admin-Key", "test-promotion-admin-key")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody),
+        ).andExpect(status().isCreated)
+            .andExpect(jsonPath("$.title").value("Promo kampus"))
+            .andReturn()
+        val promotionId = objectMapper.readTree(created.response.contentAsString).get("id").asText()
+
+        mockMvc.perform(get("/api/v1/promotions"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].id").value(promotionId))
+            .andExpect(jsonPath("$[0].targetUrl").value("/promotions/kampus"))
+
+        mockMvc.perform(
+            put("/api/v1/admin/promotions/$promotionId")
+                .header("X-Admin-Key", "test-promotion-admin-key")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody.replace("\"active\":true", "\"active\":false")),
+        ).andExpect(status().isOk)
+
+        mockMvc.perform(get("/api/v1/promotions"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[?(@.id == '$promotionId')]").doesNotExist())
+
+        mockMvc.perform(
+            delete("/api/v1/admin/promotions/$promotionId")
+                .header("X-Admin-Key", "test-promotion-admin-key"),
+        ).andExpect(status().isNoContent)
+    }
+
     @Test
     fun `user can register authenticate and publish a listing`() {
         val registration = mockMvc.perform(
@@ -36,6 +111,27 @@ class MarketplaceApiIntegrationTest @Autowired constructor(
         mockMvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer $token"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.fullName").value("Mahasiswa Unsoed"))
+
+        val partnerRequest = """{"businessName":"Lapak Demo Mahasiswa","contactPhone":"081234567890","description":"Menjual perlengkapan kuliah dan kebutuhan kos."}"""
+        mockMvc.perform(
+            post("/api/v1/partners/applications")
+                .header("Authorization", "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(partnerRequest),
+        ).andExpect(status().isCreated)
+            .andExpect(jsonPath("$.businessName").value("Lapak Demo Mahasiswa"))
+            .andExpect(jsonPath("$.status").value("PENDING"))
+
+        mockMvc.perform(get("/api/v1/partners/applications/mine").header("Authorization", "Bearer $token"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.contactPhone").value("081234567890"))
+
+        mockMvc.perform(
+            post("/api/v1/partners/applications")
+                .header("Authorization", "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(partnerRequest),
+        ).andExpect(status().isConflict)
 
         val listing = mockMvc.perform(
             post("/api/v1/listings")

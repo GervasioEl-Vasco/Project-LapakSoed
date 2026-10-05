@@ -8,22 +8,35 @@ import androidx.navigation.compose.rememberNavController
 import com.example.lapaksoed.ui.auth.LoginScreen
 import com.example.lapaksoed.ui.auth.RegisterScreen
 import com.example.lapaksoed.ui.home.HomeScreen
+import com.example.lapaksoed.ui.home.PromotionDetailScreen
+import com.example.lapaksoed.ui.home.PromotionViewModel
 import com.example.lapaksoed.ui.order.OrderViewModel
 import com.example.lapaksoed.ui.order.OrderSummaryScreen
-import com.example.lapaksoed.ui.order.PaymentScreen
+import com.example.lapaksoed.ui.order.OrderCheckoutScreen
 import com.example.lapaksoed.ui.order.SelectProductScreen
+import com.example.lapaksoed.ui.order.OrderHistoryScreen
+import com.example.lapaksoed.ui.order.OrdersViewModel
 import com.example.lapaksoed.ui.chat.ChatViewModel
 import com.example.lapaksoed.ui.chat.ChatListScreen
 import com.example.lapaksoed.ui.chat.ChatDetailScreen
 import com.example.lapaksoed.ui.profile.ProfileScreen
 import com.example.lapaksoed.ui.profile.ProfileViewModel
+import com.example.lapaksoed.ui.profile.PartnerRegistrationScreen
+import com.example.lapaksoed.ui.profile.PartnerRegistrationViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun AppNavigation(navController: NavHostController = rememberNavController()) {
+fun AppNavigation(
+    navController: NavHostController = rememberNavController(),
+    isDarkTheme: Boolean = false,
+    onDarkThemeChange: (Boolean) -> Unit = {}
+) {
     val orderViewModel: OrderViewModel = viewModel()
+    val ordersViewModel: OrdersViewModel = viewModel()
     val chatViewModel: ChatViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
+    val promotionViewModel: PromotionViewModel = viewModel()
+    val partnerViewModel: PartnerRegistrationViewModel = viewModel()
     
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
@@ -51,6 +64,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         composable("home") {
             HomeScreen(
                 onNavigateToProfile = { navController.navigate("profile") },
+                onNavigateToOrders = { navController.navigate("orders") },
+                onOpenPromotion = { promotion -> navController.navigate("promotions/${promotion.id}") },
                 onNavigateToChat = { navController.navigate("chat_list") },
                 onProductClick = { product ->
                     orderViewModel.setListing(product)
@@ -63,6 +78,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 viewModel = chatViewModel,
                 onNavigateToDetail = { navController.navigate("chat_detail") },
                 onNavigateToHome = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
+                onNavigateToOrders = { navController.navigate("orders") },
                 onNavigateToProfile = { navController.navigate("profile") }
             )
         }
@@ -87,12 +103,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             )
         }
         composable("payment") {
-            PaymentScreen(
+            OrderCheckoutScreen(
                 viewModel = orderViewModel,
-                onPay = { 
-                    // To be integrated with backend later
-                    navController.navigate("home") {
-                        popUpTo("home") { inclusive = true }
+                onOrderCreated = {
+                    navController.navigate("orders") {
+                        popUpTo("home")
                     }
                 },
                 onBack = { navController.popBackStack() }
@@ -101,10 +116,33 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         composable("profile") {
             ProfileScreen(
                 viewModel = profileViewModel,
+                isDarkTheme = isDarkTheme,
+                onDarkThemeChange = onDarkThemeChange,
                 onNavigateToHome = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
-                onNavigateToOrders = { /* TODO if orders list screen is created */ },
+                onNavigateToOrders = { navController.navigate("orders") },
                 onNavigateToChat = { navController.navigate("chat_list") },
+                onNavigateToPartnerRegistration = { navController.navigate("partner_registration") },
                 onLogout = { navController.navigate("login") { popUpTo(0) { inclusive = true } } }
+            )
+        }
+        composable("orders") {
+            OrderHistoryScreen(
+                viewModel = ordersViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("promotions/{promotionId}") { entry ->
+            PromotionDetailScreen(
+                promotionId = entry.arguments?.getString("promotionId").orEmpty(),
+                viewModel = promotionViewModel,
+                onBack = { navController.popBackStack() },
+                onBrowseCatalog = { navController.popBackStack("home", inclusive = false) }
+            )
+        }
+        composable("partner_registration") {
+            PartnerRegistrationScreen(
+                viewModel = partnerViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
     }

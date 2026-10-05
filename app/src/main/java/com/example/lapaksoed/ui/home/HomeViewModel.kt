@@ -3,7 +3,9 @@ package com.example.lapaksoed.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lapaksoed.data.remote.ListingResponse
+import com.example.lapaksoed.data.remote.PromotionResponse
 import com.example.lapaksoed.data.repository.ListingRepository
+import com.example.lapaksoed.data.repository.PromotionRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +21,7 @@ sealed class HomeState {
 
 class HomeViewModel : ViewModel() {
     private val repository = ListingRepository()
+    private val promotionRepository = PromotionRepository()
 
     private val _homeState = MutableStateFlow<HomeState>(HomeState.Loading)
     val homeState: StateFlow<HomeState> = _homeState.asStateFlow()
@@ -35,10 +38,24 @@ class HomeViewModel : ViewModel() {
     private val _selectedCategory = MutableStateFlow<String?>(null)
     val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
 
+    private val _promotions = MutableStateFlow<List<PromotionResponse>>(emptyList())
+    val promotions: StateFlow<List<PromotionResponse>> = _promotions.asStateFlow()
+
     private var searchJob: Job? = null
     
     init {
         loadProducts()
+        loadPromotions()
+    }
+
+    fun loadPromotions() {
+        viewModelScope.launch {
+            runCatching { promotionRepository.getPromotions() }
+                .getOrNull()
+                ?.takeIf { it.isSuccessful }
+                ?.body()
+                ?.let { _promotions.value = it }
+        }
     }
 
     fun loadProducts(query: String? = null, category: String? = null) {
@@ -99,6 +116,14 @@ class HomeViewModel : ViewModel() {
     }
 
     fun filterByCategory(category: String) {
+        if (category == "Semua") {
+            _selectedCategory.value = null
+            loadProducts(
+                query = if (_searchQuery.value.isBlank()) null else _searchQuery.value,
+                category = null
+            )
+            return
+        }
         if (_selectedCategory.value == category) {
             _selectedCategory.value = null
             loadProducts(

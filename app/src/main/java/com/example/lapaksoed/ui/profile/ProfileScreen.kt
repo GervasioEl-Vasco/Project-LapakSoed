@@ -32,9 +32,12 @@ import com.example.lapaksoed.ui.home.BottomNavigationBar
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel,
+    isDarkTheme: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToOrders: () -> Unit,
     onNavigateToChat: () -> Unit,
+    onNavigateToPartnerRegistration: () -> Unit,
     onLogout: () -> Unit
 ) {
     val userProfile by viewModel.userProfile.collectAsState()
@@ -42,7 +45,7 @@ fun ProfileScreen(
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE) }
     
     var isNotificationEnabled by remember { mutableStateOf(sharedPrefs.getBoolean("notif_enabled", false)) }
-    var isDarkThemeEnabled by remember { mutableStateOf(sharedPrefs.getBoolean("dark_theme", false)) }
+    var infoDialog by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.loadProfile()
@@ -88,7 +91,7 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .height(90.dp)
                         .background(
-                            Color.White,
+                            MaterialTheme.colorScheme.surface,
                             shape = RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp)
                         )
                         .border(
@@ -132,7 +135,7 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                     shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     Row(
@@ -189,16 +192,24 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Column {
-                        ProfileMenuItem(icon = Icons.Outlined.Settings, title = "Pengaturan Akun")
+                        ProfileMenuItem(icon = Icons.Outlined.Settings, title = "Pengaturan Akun") {
+                            infoDialog = "Pengaturan Akun" to "Pengaturan akun tambahan belum tersedia. Data akun yang aktif ditampilkan pada profil."
+                        }
                         Divider(color = Color.LightGray)
-                        ProfileMenuItem(icon = Icons.Outlined.Person, title = "Update Profil")
+                        ProfileMenuItem(icon = Icons.Outlined.Person, title = "Update Profil") {
+                            infoDialog = "Update Profil" to "Perubahan profil belum didukung oleh API saat ini."
+                        }
                         Divider(color = Color.LightGray)
-                        ProfileMenuItem(icon = Icons.Outlined.HelpOutline, title = "Pusat Bantuan")
+                        ProfileMenuItem(icon = Icons.Outlined.HelpOutline, title = "Pusat Bantuan") {
+                            infoDialog = "Pusat Bantuan" to "Untuk bantuan penggunaan LapakSoed, hubungi tim pengelola aplikasi."
+                        }
                         Divider(color = Color.LightGray)
-                        ProfileMenuItem(icon = Icons.Outlined.Description, title = "Ketentuan dan Privasi")
+                        ProfileMenuItem(icon = Icons.Outlined.Description, title = "Ketentuan dan Privasi") {
+                            infoDialog = "Ketentuan dan Privasi" to "Dokumen ketentuan dan privasi belum ditambahkan ke aplikasi."
+                        }
                     }
                 }
 
@@ -211,7 +222,7 @@ fun ProfileScreen(
                         .padding(horizontal = 16.dp)
                         .height(60.dp)
                         .background(Color(0xFFF29B00), RoundedCornerShape(16.dp)) // Orange background
-                        .clickable { /* noop */ },
+                        .clickable(onClick = onNavigateToPartnerRegistration),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Row(
@@ -261,11 +272,8 @@ fun ProfileScreen(
                     title = "Tema Aplikasi",
                     subtitle = null,
                     icon = Icons.Outlined.DarkMode,
-                    isChecked = isDarkThemeEnabled,
-                    onCheckedChange = { 
-                        isDarkThemeEnabled = it
-                        sharedPrefs.edit().putBoolean("dark_theme", it).apply()
-                    }
+                    isChecked = isDarkTheme,
+                    onCheckedChange = onDarkThemeChange
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -307,27 +315,41 @@ fun ProfileScreen(
             }
         }
     }
+    infoDialog?.let { (title, message) ->
+        AlertDialog(
+            onDismissRequest = { infoDialog = null },
+            title = { Text(title) },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = { infoDialog = null }) { Text("Tutup") }
+            }
+        )
+    }
 }
 
 @Composable
-fun ProfileMenuItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String) {
+fun ProfileMenuItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* noop */ }
+            .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Color.Black,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = title,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             modifier = Modifier.weight(1f)
@@ -335,7 +357,7 @@ fun ProfileMenuItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title
         Icon(
             imageVector = Icons.Default.ChevronRight,
             contentDescription = null,
-            tint = Color.Black
+            tint = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -352,8 +374,8 @@ fun ToggleItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .background(Color.White, RoundedCornerShape(16.dp))
-            .border(2.dp, Color.Black, RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+            .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Row(
@@ -363,14 +385,14 @@ fun ToggleItem(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color.Black,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(28.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
