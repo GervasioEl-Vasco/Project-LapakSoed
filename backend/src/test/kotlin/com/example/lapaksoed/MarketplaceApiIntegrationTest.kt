@@ -106,5 +106,86 @@ class MarketplaceApiIntegrationTest @Autowired constructor(
             get("/api/v1/conversations/$conversationId/messages").header("Authorization", "Bearer $token"),
         ).andExpect(status().isOk)
             .andExpect(jsonPath("$[0].body").value("Apakah barangnya masih ada?"))
+
+        val orderListing = mockMvc.perform(
+            post("/api/v1/listings")
+                .header("Authorization", "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"title":"Headset","description":"Masih bagus","price":75000,"category":"Elektronik","itemCondition":"GOOD","location":"Purwokerto","imageUrls":[]}"""),
+        ).andExpect(status().isOk).andReturn()
+        val orderListingId = objectMapper.readTree(orderListing.response.contentAsString).get("id").asText()
+
+        val createdOrder = mockMvc.perform(
+            post("/api/v1/orders")
+                .header("Authorization", "Bearer $buyerToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"listingId":"$orderListingId","quantity":1,"paymentMethod":"QRIS"}"""),
+        ).andExpect(status().isCreated)
+            .andExpect(jsonPath("$.status").value("NEW"))
+            .andExpect(jsonPath("$.totalPrice").value(75000))
+            .andReturn()
+        val orderId = objectMapper.readTree(createdOrder.response.contentAsString).get("id").asText()
+
+        mockMvc.perform(get("/api/v1/orders/mine").header("Authorization", "Bearer $buyerToken"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content[0].paymentMethod").value("QRIS"))
+
+        mockMvc.perform(
+            patch("/api/v1/orders/$orderId/status")
+                .header("Authorization", "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"status":"IN_PROGRESS"}"""),
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
+
+        mockMvc.perform(
+            patch("/api/v1/orders/$orderId/status")
+                .header("Authorization", "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"status":"COMPLETED"}"""),
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").value("COMPLETED"))
+
+        val cancelListing = mockMvc.perform(
+            post("/api/v1/listings")
+                .header("Authorization", "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"title":"Buku UTS","description":"Buku catatan","price":15000,"category":"Buku","itemCondition":"GOOD","location":"Purwokerto","imageUrls":[]}"""),
+        ).andExpect(status().isOk).andReturn()
+        val cancelListingId = objectMapper.readTree(cancelListing.response.contentAsString).get("id").asText()
+        val cancellableOrder = mockMvc.perform(
+            post("/api/v1/orders")
+                .header("Authorization", "Bearer $buyerToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"listingId":"$cancelListingId","quantity":1,"paymentMethod":"CASH_ON_DELIVERY"}"""),
+        ).andExpect(status().isCreated).andReturn()
+        val cancellableOrderId = objectMapper.readTree(cancellableOrder.response.contentAsString).get("id").asText()
+
+        mockMvc.perform(
+            patch("/api/v1/orders/$cancellableOrderId/status")
+                .header("Authorization", "Bearer $buyerToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"status":"CANCELLED"}"""),
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").value("CANCELLED"))
+
+        mockMvc.perform(get("/api/v1/listings/$cancelListingId"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").value("AVAILABLE"))
+
+        val serviceRequest = mockMvc.perform(
+            post("/api/v1/service-requests")
+                .header("Authorization", "Bearer $buyerToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"deviceCategory":"SMARTPHONE","complaint":"LCD rusak","pickupLocation":"Purwokerto","paymentMethod":"DANA"}"""),
+        ).andExpect(status().isCreated)
+            .andExpect(jsonPath("$.status").value("NEW"))
+            .andExpect(jsonPath("$.paymentMethod").value("DANA"))
+            .andReturn()
+        val serviceRequestId = objectMapper.readTree(serviceRequest.response.contentAsString).get("id").asText()
+
+        mockMvc.perform(get("/api/v1/service-requests/mine").header("Authorization", "Bearer $buyerToken"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content[0].id").value(serviceRequestId))
     }
 }

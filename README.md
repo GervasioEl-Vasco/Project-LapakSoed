@@ -17,5 +17,10 @@
 | GET | `/api/v1/conversations` | **auth** — daftar chat |
 | GET | `/api/v1/conversations/{id}/messages` | **auth** — riwayat chat |
 | POST | `/api/v1/conversations/{id}/messages` | **auth** — kirim pesan dengan body `{ "body": "..." }` |
+| POST | `/api/v1/orders` | **auth** — buat pesanan barang dengan `listingId`, `quantity: 1`, dan `paymentMethod` |
+| GET | `/api/v1/orders/mine` | **auth** — riwayat pesanan sebagai pembeli/penjual |
+| PATCH | `/api/v1/orders/{orderId}/status` | **auth** — transisi status `NEW`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED` sesuai izin |
+| POST | `/api/v1/service-requests` | **auth** — ajukan servis perangkat dan pilih metode pembayaran |
+| GET | `/api/v1/service-requests/mine` | **auth** — riwayat permintaan jasa servis |
 
 

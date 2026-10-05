@@ -18,7 +18,10 @@ class ListingService(
     private val listingRepository: ListingRepository,
     private val userRepository: UserRepository,
 ) {
-    private val categories = setOf("Buku", "Elektronik", "Pakaian", "Aksesoris", "Perlengkapan", "Lainnya")
+    private val categories = setOf(
+        "Makanan", "Minuman", "Pakaian", "Barang", "Jasa Service",
+        "Buku", "Elektronik", "Aksesoris", "Perlengkapan", "Lainnya",
+    )
 
     @Transactional(readOnly = true)
     fun browse(category: String?, query: String?, minPrice: BigDecimal?, maxPrice: BigDecimal?, page: Int, size: Int): Page<ListingResponse> {
