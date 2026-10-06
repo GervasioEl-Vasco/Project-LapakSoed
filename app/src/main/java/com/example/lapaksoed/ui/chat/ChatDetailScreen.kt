@@ -98,22 +98,13 @@ fun ChatDetailScreen(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = activeConv?.otherUserName ?: "",
-                                color = Color.Black,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            // Blue checkmark badge (dummy)
-                            Box(modifier = Modifier.size(14.dp).background(Color.Blue, CircleShape))
-                        }
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(8.dp).background(Color(0xFF00FF55), CircleShape))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Online", color = Color.Gray, fontSize = 12.sp)
-                        }
+                        Text(
+                            text = activeConv?.otherUserName ?: "",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                        Text("Percakapan", color = Color.Gray, fontSize = 12.sp)
                     }
                     Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Menu")
                 }

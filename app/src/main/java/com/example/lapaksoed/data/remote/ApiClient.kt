@@ -41,4 +41,5 @@ object ApiClient {
     val orderApi: OrderApi = retrofit.create(OrderApi::class.java)
     val promotionApi: PromotionApi = retrofit.create(PromotionApi::class.java)
     val partnerApi: PartnerApi = retrofit.create(PartnerApi::class.java)
+    val serviceApi: ServiceApi = retrofit.create(ServiceApi::class.java)
 }

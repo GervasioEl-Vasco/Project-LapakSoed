@@ -11,6 +11,8 @@ import com.example.lapaksoed.ui.home.HomeScreen
 import com.example.lapaksoed.ui.home.PromotionDetailScreen
 import com.example.lapaksoed.ui.home.PromotionViewModel
 import com.example.lapaksoed.ui.order.OrderViewModel
+import com.example.lapaksoed.ui.order.ServiceRequestScreen
+import com.example.lapaksoed.ui.order.ServiceViewModel
 import com.example.lapaksoed.ui.order.OrderSummaryScreen
 import com.example.lapaksoed.ui.order.OrderCheckoutScreen
 import com.example.lapaksoed.ui.order.SelectProductScreen
@@ -23,6 +25,9 @@ import com.example.lapaksoed.ui.profile.ProfileScreen
 import com.example.lapaksoed.ui.profile.ProfileViewModel
 import com.example.lapaksoed.ui.profile.PartnerRegistrationScreen
 import com.example.lapaksoed.ui.profile.PartnerRegistrationViewModel
+import com.example.lapaksoed.ui.profile.UpdateProfileScreen
+import com.example.lapaksoed.ui.info.TermsPrivacyScreen
+import com.example.lapaksoed.ui.info.HelpCenterScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
@@ -37,6 +42,7 @@ fun AppNavigation(
     val profileViewModel: ProfileViewModel = viewModel()
     val promotionViewModel: PromotionViewModel = viewModel()
     val partnerViewModel: PartnerRegistrationViewModel = viewModel()
+    val serviceViewModel: ServiceViewModel = viewModel()
     
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
@@ -67,6 +73,7 @@ fun AppNavigation(
                 onNavigateToOrders = { navController.navigate("orders") },
                 onOpenPromotion = { promotion -> navController.navigate("promotions/${promotion.id}") },
                 onNavigateToChat = { navController.navigate("chat_list") },
+                onNavigateToService = { navController.navigate("service_request") },
                 onProductClick = { product ->
                     orderViewModel.setListing(product)
                     navController.navigate("select_product")
@@ -113,6 +120,17 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() }
             )
         }
+        composable("service_request") {
+            ServiceRequestScreen(
+                viewModel = serviceViewModel,
+                onBack = { navController.popBackStack() },
+                onSubmitted = {
+                    navController.navigate("home") {
+                        popUpTo("home")
+                    }
+                },
+            )
+        }
         composable("profile") {
             ProfileScreen(
                 viewModel = profileViewModel,
@@ -122,6 +140,9 @@ fun AppNavigation(
                 onNavigateToOrders = { navController.navigate("orders") },
                 onNavigateToChat = { navController.navigate("chat_list") },
                 onNavigateToPartnerRegistration = { navController.navigate("partner_registration") },
+                onNavigateToUpdateProfile = { navController.navigate("update_profile") },
+                onNavigateToTermsPrivacy = { navController.navigate("terms_privacy") },
+                onNavigateToHelpCenter = { navController.navigate("help_center") },
                 onLogout = { navController.navigate("login") { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -142,6 +163,22 @@ fun AppNavigation(
         composable("partner_registration") {
             PartnerRegistrationScreen(
                 viewModel = partnerViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("update_profile") {
+            UpdateProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("terms_privacy") {
+            TermsPrivacyScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("help_center") {
+            HelpCenterScreen(
                 onBack = { navController.popBackStack() }
             )
         }

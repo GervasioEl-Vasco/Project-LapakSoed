@@ -21,15 +21,6 @@ class OrderViewModel : ViewModel() {
     private val _quantity = MutableStateFlow(1)
     val quantity: StateFlow<Int> = _quantity.asStateFlow()
 
-    private val _deviceCategory = MutableStateFlow("")
-    val deviceCategory: StateFlow<String> = _deviceCategory.asStateFlow()
-
-    private val _complaint = MutableStateFlow("")
-    val complaint: StateFlow<String> = _complaint.asStateFlow()
-
-    private val _pickupLocation = MutableStateFlow("")
-    val pickupLocation: StateFlow<String> = _pickupLocation.asStateFlow()
-
     private val _paymentMethod = MutableStateFlow("")
     val paymentMethod: StateFlow<String> = _paymentMethod.asStateFlow()
 
@@ -39,9 +30,6 @@ class OrderViewModel : ViewModel() {
     fun setListing(listing: ListingResponse) {
         _selectedListing.value = listing
         _quantity.value = 1
-        _deviceCategory.value = ""
-        _complaint.value = ""
-        _pickupLocation.value = ""
         _paymentMethod.value = ""
         _submissionState.value = OrderSubmissionState.Idle
     }
@@ -50,18 +38,6 @@ class OrderViewModel : ViewModel() {
         if (newQuantity == 1) {
             _quantity.value = newQuantity
         }
-    }
-
-    fun setDeviceCategory(category: String) {
-        _deviceCategory.value = category
-    }
-
-    fun setComplaint(complaint: String) {
-        _complaint.value = complaint
-    }
-
-    fun setPickupLocation(location: String) {
-        _pickupLocation.value = location
     }
 
     fun setPaymentMethod(method: String) {

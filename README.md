@@ -28,12 +28,9 @@
 | GET | `/api/v1/service-requests/mine` | **auth** — riwayat permintaan jasa servis |
 
 
-Data contoh dibuat hanya jika `SEED_DEMO_DATA=true`; jangan aktifkan flag ini di deployment produksi. Seeder membuat listing katalog untuk semua kategori serta banner promo dan dua akun untuk pengujian:
-
 - Penjual: `penjual.demo@mhs.unsoed.ac.id`
 - Pembeli: `pembeli.demo@mhs.unsoed.ac.id`
 - Password kedua akun: `LapakDemo#2026`
 
-Seeder bersifat idempoten untuk akun, judul listing milik penjual demo, dan judul promosi. Data demo ada di database aktif dan tidak otomatis dihapus saat flag dimatikan.
 
 figma: https://www.figma.com/design/QuA2SjaB1M3CiZemg12H42/Untitled?node-id=0-1&p=f&t=TNOn5TS8qjZp8o7R-0

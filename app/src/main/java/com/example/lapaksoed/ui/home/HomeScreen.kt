@@ -64,7 +64,8 @@ fun HomeScreen(
     onNavigateToOrders: () -> Unit = {},
     onOpenPromotion: (PromotionResponse) -> Unit = {},
     onProductClick: (ListingResponse) -> Unit = {},
-    onNavigateToChat: () -> Unit = {}
+    onNavigateToChat: () -> Unit = {},
+    onNavigateToService: () -> Unit = {},
 ) {
     val homeState by viewModel.homeState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -262,7 +263,10 @@ fun HomeScreen(
                                         "Lainnya" to Icons.Default.Category
                                     )
                                     lazyRowItems(catalogCategories) { (title, icon) ->
-                                        CategoryItem(title, icon, selectedCategory) { viewModel.filterByCategory(it) }
+                                        CategoryItem(title, icon, selectedCategory) {
+                                            if (it == "Jasa Service") onNavigateToService()
+                                            else viewModel.filterByCategory(it)
+                                        }
                                     }
                                 }
                             }
@@ -482,28 +486,26 @@ fun ProductCard(
         modifier = Modifier.fillMaxWidth().clickable { onClick(product) }
     ) {
         Column {
+            val imageUrl = product.imageUrls.firstOrNull()
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .background(Color.LightGray)
+                    .background(Color(0xFFE5E7EB))
             ) {
-                // Image placeholder
-                // Assuming imageUrls is empty, we show a gray box.
-                // You can replace this with Coil or Glide Image if needed.
-                
-                // Promo badge
-                Box(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .background(Color.Red, RoundedCornerShape(8.dp)) // Approximate jagged badge with a simple rounded box for now
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
+                if (imageUrl != null) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = product.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
                     Text(
-                        text = "PROMO !",
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "Foto belum tersedia",
+                        color = Color.Gray,
+                        modifier = Modifier.align(Alignment.Center),
+                        fontSize = 12.sp,
                     )
                 }
             }
@@ -518,29 +520,6 @@ fun ProductCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .background(yellowBtn, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "Rating",
-                                tint = Color.White,
-                                modifier = Modifier.size(10.dp)
-                            )
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text(
-                                text = "5.0", // Dummy rating as backend doesn't have it
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Rp ${product.price.toLong()}",

@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -38,6 +39,9 @@ fun ProfileScreen(
     onNavigateToOrders: () -> Unit,
     onNavigateToChat: () -> Unit,
     onNavigateToPartnerRegistration: () -> Unit,
+    onNavigateToUpdateProfile: () -> Unit,
+    onNavigateToTermsPrivacy: () -> Unit,
+    onNavigateToHelpCenter: () -> Unit,
     onLogout: () -> Unit
 ) {
     val userProfile by viewModel.userProfile.collectAsState()
@@ -45,6 +49,10 @@ fun ProfileScreen(
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE) }
     
     var isNotificationEnabled by remember { mutableStateOf(sharedPrefs.getBoolean("notif_enabled", false)) }
+    var is2FaEnabled by remember { mutableStateOf(sharedPrefs.getBoolean("2fa_enabled", false)) }
+    var isBiometricEnabled by remember { mutableStateOf(sharedPrefs.getBoolean("biometric_enabled", false)) }
+    var isEmailNotifEnabled by remember { mutableStateOf(sharedPrefs.getBoolean("email_notif_enabled", true)) }
+    
     var infoDialog by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     LaunchedEffect(Unit) {
@@ -53,7 +61,7 @@ fun ProfileScreen(
 
     val yellowBtn = Color(0xFFFFD600)
     val blueBg = Color(0xFF0924A5)
-    val avatarColor = Color(0xFF6B3A36) // Dark brown/reddish color from Figma
+    val avatarColor = Color(0xFF6B3A36) 
 
     Scaffold(
         bottomBar = {
@@ -85,7 +93,7 @@ fun ProfileScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // Header (Same as Home: White background, rounded bottom, yellow border)
+                // Header 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -102,18 +110,10 @@ fun ProfileScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Avatar in Header
-                        Box(
-                            modifier = Modifier
-                                .size(60.dp)
-                                .background(avatarColor, CircleShape)
-                                .border(1.dp, Color.Black, CircleShape)
-                        )
+                        Box(modifier = Modifier.size(60.dp).background(avatarColor, CircleShape).border(1.dp, Color.Black, CircleShape))
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             text = "IKLAN",
@@ -129,185 +129,202 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Profile Info Card
+                // Profile Info Card with completeness score
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(70.dp)
-                                .background(Color(0xFF5E0B0B), CircleShape) // Darker red/brown for the big avatar
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(
-                                text = userProfile?.fullName ?: "Memuat...",
-                                color = Color.Black,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = userProfile?.email ?: "",
-                                color = Color(0xFFE5A822), // Orange/yellow
-                                fontSize = 14.sp
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            // Google Chip
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
-                                modifier = Modifier
-                                    .background(Color(0xFF0D328C), RoundedCornerShape(8.dp))
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                modifier = Modifier.size(70.dp).background(Color(0xFF5E0B0B), CircleShape),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    // Placeholder for G icon, using a simple text G
-                                    Box(
-                                        modifier = Modifier.size(16.dp).background(Color.White, CircleShape),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("G", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = (userProfile?.fullName?.firstOrNull() ?: "?").toString().uppercase(),
+                                    color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = userProfile?.fullName ?: "Memuat...",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 18.sp, fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(text = userProfile?.email ?: "", color = Color(0xFFE5A822), fontSize = 14.sp)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier.background(blueBg, RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(
+                                            modifier = Modifier.size(16.dp).background(Color.White, CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) { Text("L", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold) }
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Akun LapakSoed", color = Color.White, fontSize = 10.sp)
                                     }
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Terhubung via Google", color = Color.White, fontSize = 10.sp)
                                 }
                             }
                         }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Divider(color = Color.LightGray.copy(alpha = 0.5f))
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Completeness / Security Score
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Outlined.VerifiedUser, null, tint = Color(0xFF22C55E), modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Skor Keamanan Akun", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.weight(1f))
+                            Text("85%", fontWeight = FontWeight.Bold, color = Color(0xFF22C55E))
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        LinearProgressIndicator(
+                            progress = { 0.85f },
+                            modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+                            color = Color(0xFF22C55E),
+                            trackColor = Color(0xFF22C55E).copy(alpha = 0.2f)
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Menus
+                // Menus: Navigasi Baru
+                ProfileSectionTitle("Pengaturan & Profil")
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Column {
-                        ProfileMenuItem(icon = Icons.Outlined.Settings, title = "Pengaturan Akun") {
-                            infoDialog = "Pengaturan Akun" to "Pengaturan akun tambahan belum tersedia. Data akun yang aktif ditampilkan pada profil."
+                        ProfileMenuItem(Icons.Outlined.Person, "Update Profil") { onNavigateToUpdateProfile() }
+                        Divider(color = Color.LightGray.copy(alpha = 0.5f))
+                        ProfileMenuItem(Icons.Outlined.HelpOutline, "Pusat Bantuan") { onNavigateToHelpCenter() }
+                        Divider(color = Color.LightGray.copy(alpha = 0.5f))
+                        ProfileMenuItem(Icons.Outlined.Description, "Ketentuan dan Privasi") { onNavigateToTermsPrivacy() }
+                    }
+                }
+
+                ProfileSectionTitle("Keamanan Akun")
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Column {
+                        ProfileMenuItem(Icons.Outlined.Lock, "Ubah Password") {
+                            infoDialog = "Ubah Password" to "Fitur ubah password dalam tahap pengembangan."
                         }
-                        Divider(color = Color.LightGray)
-                        ProfileMenuItem(icon = Icons.Outlined.Person, title = "Update Profil") {
-                            infoDialog = "Update Profil" to "Perubahan profil belum didukung oleh API saat ini."
+                        Divider(color = Color.LightGray.copy(alpha = 0.5f))
+                        ToggleItemRow(
+                            title = "Autentikasi 2 Faktor (2FA)",
+                            subtitle = "Lapisan keamanan ekstra",
+                            icon = Icons.Outlined.Security,
+                            isChecked = is2FaEnabled,
+                            onCheckedChange = { is2FaEnabled = it; sharedPrefs.edit().putBoolean("2fa_enabled", it).apply() }
+                        )
+                        Divider(color = Color.LightGray.copy(alpha = 0.5f))
+                        ToggleItemRow(
+                            title = "Login Biometrik",
+                            subtitle = "Gunakan sidik jari / Face ID",
+                            icon = Icons.Outlined.Fingerprint,
+                            isChecked = isBiometricEnabled,
+                            onCheckedChange = { isBiometricEnabled = it; sharedPrefs.edit().putBoolean("biometric_enabled", it).apply() }
+                        )
+                    }
+                }
+
+                ProfileSectionTitle("Metode Pembayaran")
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Column {
+                        ProfileMenuItem(Icons.Outlined.AccountBalanceWallet, "E-Wallet (GoPay, OVO, dll)") {
+                            infoDialog = "E-Wallet" to "Manajemen e-wallet akan tersedia di versi berikutnya."
                         }
-                        Divider(color = Color.LightGray)
-                        ProfileMenuItem(icon = Icons.Outlined.HelpOutline, title = "Pusat Bantuan") {
-                            infoDialog = "Pusat Bantuan" to "Untuk bantuan penggunaan LapakSoed, hubungi tim pengelola aplikasi."
-                        }
-                        Divider(color = Color.LightGray)
-                        ProfileMenuItem(icon = Icons.Outlined.Description, title = "Ketentuan dan Privasi") {
-                            infoDialog = "Ketentuan dan Privasi" to "Dokumen ketentuan dan privasi belum ditambahkan ke aplikasi."
+                        Divider(color = Color.LightGray.copy(alpha = 0.5f))
+                        ProfileMenuItem(Icons.Outlined.CreditCard, "Kartu Debit / Kredit") {
+                            infoDialog = "Kartu" to "Pembayaran dengan kartu belum diaktifkan."
                         }
                     }
                 }
 
+                ProfileSectionTitle("Preferensi & Notifikasi")
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Column {
+                        ToggleItemRow(
+                            title = "Notifikasi Push HP",
+                            subtitle = "Promo, Transaksi & Pesan",
+                            icon = Icons.Outlined.NotificationsActive,
+                            isChecked = isNotificationEnabled,
+                            onCheckedChange = { isNotificationEnabled = it; sharedPrefs.edit().putBoolean("notif_enabled", it).apply() }
+                        )
+                        Divider(color = Color.LightGray.copy(alpha = 0.5f))
+                        ToggleItemRow(
+                            title = "Email Ringkasan",
+                            subtitle = "Update mingguan & promosi",
+                            icon = Icons.Outlined.Email,
+                            isChecked = isEmailNotifEnabled,
+                            onCheckedChange = { isEmailNotifEnabled = it; sharedPrefs.edit().putBoolean("email_notif_enabled", it).apply() }
+                        )
+                        Divider(color = Color.LightGray.copy(alpha = 0.5f))
+                        ToggleItemRow(
+                            title = "Mode Gelap (Dark Mode)",
+                            subtitle = "Tema aplikasi",
+                            icon = Icons.Outlined.DarkMode,
+                            isChecked = isDarkTheme,
+                            onCheckedChange = onDarkThemeChange
+                        )
+                    }
+                }
+                
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Daftar Mitra Button
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .height(60.dp)
-                        .background(Color(0xFFF29B00), RoundedCornerShape(16.dp)) // Orange background
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(60.dp)
+                        .background(Color(0xFFF29B00), RoundedCornerShape(16.dp))
                         .clickable(onClick = onNavigateToPartnerRegistration),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.AssignmentTurnedIn, // Approximating icon
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.Storefront, null, tint = Color.White, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = "Daftar Sebagai Mitra",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            tint = Color.White
-                        )
+                        Text("Daftar Sebagai Mitra", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.weight(1f))
+                        Box(
+                            modifier = Modifier.background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) { Text("NEW", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold) }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.Default.ChevronRight, null, tint = Color.White)
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Notifikasi HP
-                ToggleItem(
-                    title = "Notifikasi HP",
-                    subtitle = "Ketuk untuk mengaktifkan",
-                    icon = Icons.Outlined.NotificationsOff,
-                    isChecked = isNotificationEnabled,
-                    onCheckedChange = { 
-                        isNotificationEnabled = it
-                        sharedPrefs.edit().putBoolean("notif_enabled", it).apply()
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Tema Aplikasi
-                ToggleItem(
-                    title = "Tema Aplikasi",
-                    subtitle = null,
-                    icon = Icons.Outlined.DarkMode,
-                    isChecked = isDarkTheme,
-                    onCheckedChange = onDarkThemeChange
-                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Logout Button
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .height(60.dp)
-                        .background(Color(0xFFFFEAEA), RoundedCornerShape(16.dp)) // Light red tint
-                        .border(2.dp, Color.Red, RoundedCornerShape(16.dp))
-                        .clickable {
-                            viewModel.logout()
-                            onLogout()
-                        },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(60.dp)
+                        .background(Color(0xFFFFEAEA), RoundedCornerShape(16.dp))
+                        .border(1.dp, Color.Red.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                        .clickable { viewModel.logout(); onLogout() },
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Logout,
-                            contentDescription = "Log Out",
-                            tint = Color.Red
-                        )
+                    Row(modifier = Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.Logout, "Log Out", tint = Color.Red)
                         Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = "LOG OUT",
-                            color = Color.Red,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
+                        Text("LOG OUT DARI AKUN INI", color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     }
                 }
                 
@@ -315,49 +332,71 @@ fun ProfileScreen(
             }
         }
     }
+    
     infoDialog?.let { (title, message) ->
         AlertDialog(
             onDismissRequest = { infoDialog = null },
             title = { Text(title) },
             text = { Text(message) },
-            confirmButton = {
-                TextButton(onClick = { infoDialog = null }) { Text("Tutup") }
-            }
+            confirmButton = { TextButton(onClick = { infoDialog = null }) { Text("Tutup") } }
         )
     }
 }
 
 @Composable
-fun ProfileMenuItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    onClick: () -> Unit
-) {
+fun ProfileSectionTitle(title: String) {
+    Text(
+        text = title,
+        fontWeight = FontWeight.Bold,
+        fontSize = 14.sp,
+        color = Color.White,
+        modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp).background(Color(0xFF0924A5).copy(alpha = 0.8f), RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 2.dp)
+    )
+}
+
+@Composable
+fun ProfileMenuItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, onClick: () -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.size(24.dp)
-        )
+        Icon(icon, null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = title,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
-            modifier = Modifier.weight(1f)
-        )
-        Icon(
-            imageVector = Icons.Default.ChevronRight,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface
+        Text(title, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.weight(1f))
+        Icon(Icons.Default.ChevronRight, null, tint = Color.Gray, modifier = Modifier.size(20.dp))
+    }
+}
+
+@Composable
+fun ToggleItemRow(
+    title: String,
+    subtitle: String?,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)
+    ) {
+        Icon(icon, null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(24.dp))
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            if (subtitle != null) {
+                Text(subtitle, color = Color.Gray, fontSize = 11.sp)
+            }
+        }
+        Switch(
+            checked = isChecked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Color(0xFF0924A5),
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = Color.LightGray
+            ),
+            modifier = Modifier.scale(0.85f)
         )
     }
 }
@@ -371,48 +410,21 @@ fun ToggleItem(
     onCheckedChange: (Boolean) -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
             .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(28.dp)
-            )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Icon(icon, null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(28.dp))
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        color = Color.Gray,
-                        fontSize = 10.sp
-                    )
-                }
+                Text(title, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                if (subtitle != null) Text(subtitle, color = Color.Gray, fontSize = 10.sp)
             }
             Switch(
-                checked = isChecked,
-                onCheckedChange = onCheckedChange,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = Color(0xFF0924A5), // Blue when active
-                    uncheckedThumbColor = Color.White,
-                    uncheckedTrackColor = Color.Gray
-                )
+                checked = isChecked, onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = Color(0xFF0924A5), uncheckedThumbColor = Color.White, uncheckedTrackColor = Color.Gray)
             )
         }
     }
